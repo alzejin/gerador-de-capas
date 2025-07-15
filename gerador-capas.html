@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Capas para Vídeos</title>
+    <!-- Link para a fonte Oswald do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    <!-- Link para Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link para JSZip (para criar arquivos ZIP) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Link para FileSaver.js (para salvar o arquivo ZIP) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            border: none;
+            color: white;
+            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            box-shadow: 0 4px 15px 0 rgba(45, 54, 65, 0.75);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px 0 rgba(45, 54, 65, 0.75);
+        }
+        .btn-secondary {
+            background-image: linear-gradient(to right, #fc6076 0%, #ff9a44 100%);
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 150px;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .spinner {
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid #ffffff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .instructions {
+            text-align: left;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .instructions h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .instructions ol {
+            list-style: decimal;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #555;
+        }
+        .message-box {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 1001;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .message-box button {
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        /* Canvas hidden for rendering */
+        #hiddenCanvas {
+            display: none;
+        }
+        /* Elemento invisível para forçar o carregamento da fonte Oswald */
+        .preload-font {
+            font-family: 'Oswald';
+            font-weight: 700; /* Bold */
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="font-inter">
+    <div class="container">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Gerador de Capas para Vídeos</h1>
+
+        <div id="typeSelection" class="flex justify-center mb-8">
+            <button id="standardBtn" class="btn">Versão Padrão</button>
+            <button id="librasBtn" class="btn btn-secondary">Versão LIBRAS</button>
+        </div>
+
+        <div id="inputSection" class="hidden">
+            <textarea id="themeInput" placeholder="Cole os temas aqui, um por linha..."></textarea>
+            <button id="generateBtn" class="btn mt-6">Gerar Capas</button>
+        </div>
+
+        <div id="howToUse" class="instructions hidden">
+            <h3>Como Utilizar:</h3>
+            <ol>
+                <li>Selecione o *tipo de capa* desejado: "Versão Padrão" ou "Versão LIBRAS".</li>
+                <li>Na caixa de texto que aparecerá, *cole todos os temas*, um por linha. Cada linha será uma capa diferente.</li>
+                <li>Clique no botão "*Gerar Capas*".</li>
+                <li>Aguarde enquanto as capas são criadas. Um indicador de progresso aparecerá.</li>
+                <li>As capas serão baixadas automaticamente em um arquivo ZIP, nomeadas como "tema [número da linha] - [nome do tema].png".</li>
+                <li>Para as imagens de fundo funcionarem, você precisa hospedá-las em um serviço de hospedagem de imagens (como Imgur, Google Drive com link direto, etc.) e obter os links diretos para elas. Substitua os URLs de exemplo no código-fonte por seus próprios links.</li>
+                <ul>
+                    <li>*Link para a imagem padrão:* `https://i.imgur.com/UnzeMmo.png` (Exemplo: usei o Imgur, mas você pode usar o Google Drive com link direto)</li>
+                    <li>*Link para a imagem LIBRAS:* `https://i.imgur.com/WWBaVsI.png` (Exemplo: usei o Imgur, mas você pode usar o Google Drive com link direto)</li>
+                    <li>Para obter o ID do Google Drive, clique com o botão direito na imagem, selecione "Compartilhar" e copie o ID da URL de compartilhamento (é a parte entre `/d/` e `/view`). Para usar com `https://drive.google.com/uc?id=`, substitua `SEU_ID_DA_IMAGEM`.</li>
+                </ul>
+            </ol>
+        </div>
+
+        <button id="showInstructionsBtn" class="btn mt-6 bg-gray-500 hover:bg-gray-600">Como Usar?</button>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="messageBox" class="message-box">
+        <p id="messageText"></p>
+        <button onclick="document.getElementById('messageBox').style.display = 'none';">OK</button>
+    </div>
+
+    <!-- Canvas oculto para renderização das imagens -->
+    <canvas id="hiddenCanvas" width="1920" height="1080"></canvas>
+
+    <!-- Elemento invisível para forçar o carregamento da fonte Oswald -->
+    <div class="preload-font">.</div>
+
+    <script>
+        // Função para exibir mensagens personalizadas
+        function showMessage(message) {
+            document.getElementById('messageText').innerText = message;
+            document.getElementById('messageBox').style.display = 'block';
+        }
+
+        // URLs das imagens de fundo (SUBSTITUA PELOS SEUS LINKS DIRETOS)
+        // Usei links do Imgur como exemplo para garantir que funcionem fora do Google Drive
+        const standardImageUrl = 'https://i.imgur.com/UnzeMmo.png'; // Imagem de placeholder para Versão Padrão
+        const librasImageUrl = 'https://i.imgur.com/WWBaVsI.png';   // Imagem de placeholder para Versão LIBRAS
+
+        let selectedCoverType = null; // 'standard' or 'libras'
+
+        const standardBtn = document.getElementById('standardBtn');
+        const librasBtn = document.getElementById('librasBtn');
+        const inputSection = document.getElementById('inputSection');
+        const themeInput = document.getElementById('themeInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const howToUse = document.getElementById('howToUse');
+        const showInstructionsBtn = document.getElementById('showInstructionsBtn');
+        const hiddenCanvas = document.getElementById('hiddenCanvas');
+        const ctx = hiddenCanvas.getContext('2d');
+
+        // Dimensões do canvas
+        const CANVAS_WIDTH = 1920;
+        const CANVAS_HEIGHT = 1080;
+
+        // Coordenadas e dimensões aproximadas para a área de texto (baseado nas imagens de delimitação)
+        const TEXT_AREA = {
+            standard: {
+                x: CANVAS_WIDTH * 0.15,
+                y: CANVAS_HEIGHT * 0.25, // Ajustado para centralizar melhor o texto verticalmente
+                width: CANVAS_WIDTH * 0.7,
+                height: CANVAS_HEIGHT * 0.5 // Maior altura para acomodar mais linhas
+            },
+            libras: {
+                x: CANVAS_WIDTH * 0.10,
+                y: CANVAS_HEIGHT * 0.25, // Ajustado para centralizar melhor o texto verticalmente
+                width: CANVAS_WIDTH * 0.55,
+                height: CANVAS_HEIGHT * 0.5 // Maior altura para acomodar mais linhas
+            }
+        };
+
+        // Event Listeners para os botões de seleção de tipo de capa
+        standardBtn.addEventListener('click', () => {
+            selectedCoverType = 'standard';
+            inputSection.classList.remove('hidden');
+            standardBtn.classList.add('bg-blue-700', 'shadow-lg');
+            librasBtn.classList.remove('bg-blue-700', 'shadow-lg');
+            howToUse.classList.add('hidden'); // Esconde as instruções ao selecionar
+        });
+
+        librasBtn.addEventListener('click', () => {
+            selectedCoverType = 'libras';
+            inputSection.classList.remove('hidden');
+            librasBtn.classList.add('bg-blue-700', 'shadow-lg');
+            standardBtn.classList.remove('bg-blue-700', 'shadow-lg');
+            howToUse.classList.add('hidden'); // Esconde as instruções ao selecionar
+        });
+
+        // Event Listener para o botão "Como Usar?"
+        showInstructionsBtn.addEventListener('click', () => {
+            howToUse.classList.toggle('hidden');
+        });
+
+        // Função para carregar a imagem de fundo
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous'; // Necessário para evitar problemas de CORS ao desenhar em canvas
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Falha ao carregar a imagem de fundo. Verifique o URL.'));
+                img.src = url;
+            });
+        }
+
+        // Função para ajustar o tamanho da fonte para caber na área
+        function fitTextOnCanvas(context, text, maxWidth, maxHeight, initialFontSize = 90) {
+            let fontSize = initialFontSize;
+            context.font = `bold ${fontSize}pt Oswald`;
+            context.textAlign = 'center';
+            context.fillStyle = '#000000'; // Cor do texto preta
+
+            let lines = [];
+            let words = text.split(' ');
+            let currentLine = words[0] || '';
+
+            // Quebra de linha para caber na largura máxima
+            for (let i = 1; i < words.length; i++) {
+                let testLine = currentLine + ' ' + words[i];
+                let metrics = context.measureText(testLine);
+                if (metrics.width < maxWidth) {
+                    currentLine = testLine;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+
+            // Ajusta o tamanho da fonte para caber na altura máxima
+            let textHeight = lines.length * fontSize * 1.6; // Multiplicador para espaçamento entre linhas
+            while (textHeight > maxHeight && fontSize > 10) { // Limite mínimo de fonte para evitar loops infinitos
+                fontSize -= 5; // Reduz o tamanho da fonte em passos maiores
+                context.font = `bold ${fontSize}pt Oswald`; // Atualizar a fonte com o novo tamanho
+                lines = [];
+                currentLine = words[0] || '';
+                for (let i = 1; i < words.length; i++) {
+                    let testLine = currentLine + ' ' + words[i];
+                    let metrics = context.measureText(testLine);
+                    if (metrics.width < maxWidth) {
+                        currentLine = testLine;
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    }
+                }
+                lines.push(currentLine);
+                textHeight = lines.length * fontSize * 1.6; // Usar o novo multiplicador aqui também
+            }
+            return { lines, fontSize };
+        }
+
+        // Event Listener para o botão "Gerar Capas"
+        generateBtn.addEventListener('click', async () => {
+            if (!selectedCoverType) {
+                showMessage('Por favor, selecione o tipo de capa (Padrão ou LIBRAS) primeiro.');
+                return;
+            }
+
+            const themes = themeInput.value.split('\n').map(theme => theme.trim()).filter(theme => theme !== '');
+
+            if (themes.length === 0) {
+                showMessage('Por favor, insira pelo menos um tema na caixa de texto.');
+                return;
+            }
+
+            loadingOverlay.style.display = 'flex'; // Mostra o indicador de carregamento
+
+            try {
+                // Espera a fonte Oswald ser carregada antes de continuar
+                await document.fonts.ready;
+                // Uma verificação mais robusta do carregamento da fonte
+                if (!document.fonts.check('700 12px Oswald')) { // Verifica o peso 700 e um tamanho base
+                    console.warn("A fonte Oswald Bold pode não ter sido carregada corretamente. Usando fallback.");
+                }
+
+                const imageUrl = selectedCoverType === 'standard' ? standardImageUrl : librasImageUrl;
+                const baseImage = await loadImage(imageUrl);
+
+                const zip = new JSZip(); // Inicializa o objeto JSZip
+
+                for (let i = 0; i < themes.length; i++) {
+                    const theme = themes[i];
+                    const lineNumber = i + 1;
+                    // Limpa o nome do arquivo para ser compatível com sistemas de arquivos
+                    const cleanThemeName = theme.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '-').substring(0, 50); // Limita o tamanho do nome
+                    const fileName = `tema ${lineNumber} - ${cleanThemeName}.png`;
+
+                    // Limpa o canvas antes de desenhar a nova capa
+                    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+                    // Desenha a imagem de fundo
+                    ctx.drawImage(baseImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+                    // Configurações da área de texto
+                    const textArea = TEXT_AREA[selectedCoverType];
+
+                    // Ajusta o texto para caber na área delimitada
+                    const { lines, fontSize } = fitTextOnCanvas(ctx, theme, textArea.width, textArea.height);
+
+                    // Desenha o texto centralizado na área delimitada
+                    ctx.font = `bold ${fontSize}pt Oswald`;
+                    ctx.fillStyle = '#000000'; // Cor do texto preta
+                    ctx.textAlign = 'center';
+
+                    // Calcula a posição Y inicial para centralizar verticalmente
+                    const lineHeight = fontSize * 1.6;
+                    const totalTextHeight = lines.length * lineHeight;
+                    // Ajuste para centralizar verticalmente e mover um pouco mais para baixo
+                    const startY = textArea.y + (textArea.height - totalTextHeight) / 2 + (fontSize * 1.0); // Ajuste fino para a linha de base
+
+                    lines.forEach((line, index) => {
+                        ctx.fillText(line, textArea.x + textArea.width / 2, startY + index * lineHeight);
+                    });
+
+                    // Converte a imagem do canvas para base64 (sem o prefixo "data:image/png;base64,")
+                    const dataUrl = hiddenCanvas.toDataURL('image/png');
+                    const base64Data = dataUrl.split(',')[1];
+
+                    // Adiciona a imagem ao arquivo ZIP
+                    zip.file(fileName, base64Data, { base64: true });
+                }
+
+                // Gera o arquivo ZIP e força o download
+                zip.generateAsync({ type: "blob" })
+                    .then(function(content) {
+                        saveAs(content, "capas_videos.zip"); // Usa FileSaver.js para salvar
+                        showMessage('Capas geradas e baixadas com sucesso em um arquivo ZIP!');
+                    });
+
+            } catch (error) {
+                console.error('Erro ao gerar capas:', error);
+                showMessage('Ocorreu um erro ao gerar as capas. Verifique o console para mais detalhes e certifique-se de que os links das imagens estão corretos e acessíveis.');
+            } finally {
+                loadingOverlay.style.display = 'none'; // Esconde o indicador de carregamento
+            }
+        });
+    </script>
+</body>
+</html>
