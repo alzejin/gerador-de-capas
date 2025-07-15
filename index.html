@@ -160,7 +160,7 @@
         </div>
 
         <div id="inputSection" class="hidden">
-            <textarea id="themeInput" placeholder="Cole os temas aqui, um por linha..."></textarea>
+            <textarea id="themeInput" placeholder="Cole ou digite aqui os temas dos vídeos, apenas um tema por linha. Cada linha irá gerar uma capa com o tema inserido."></textarea>
             <button id="generateBtn" class="btn mt-6">Gerar Capas</button>
         </div>
 
@@ -168,16 +168,10 @@
             <h3>Como Utilizar:</h3>
             <ol>
                 <li>Selecione o *tipo de capa* desejado: "Versão Padrão" ou "Versão LIBRAS".</li>
-                <li>Na caixa de texto que aparecerá, *cole todos os temas*, um por linha. Cada linha será uma capa diferente.</li>
+                <li>Na caixa de texto que aparecerá, *cole todos os temas*, um tema por linha. Cada linha será uma capa diferente.</li>
                 <li>Clique no botão "*Gerar Capas*".</li>
                 <li>Aguarde enquanto as capas são criadas. Um indicador de progresso aparecerá.</li>
                 <li>As capas serão baixadas automaticamente em um arquivo ZIP, nomeadas como "tema [número da linha] - [nome do tema].png".</li>
-                <li>Para as imagens de fundo funcionarem, você precisa hospedá-las em um serviço de hospedagem de imagens (como Imgur, Google Drive com link direto, etc.) e obter os links diretos para elas. Substitua os URLs de exemplo no código-fonte por seus próprios links.</li>
-                <ul>
-                    <li>*Link para a imagem padrão:* `https://i.imgur.com/UnzeMmo.png` (Exemplo: usei o Imgur, mas você pode usar o Google Drive com link direto)</li>
-                    <li>*Link para a imagem LIBRAS:* `https://i.imgur.com/WWBaVsI.png` (Exemplo: usei o Imgur, mas você pode usar o Google Drive com link direto)</li>
-                    <li>Para obter o ID do Google Drive, clique com o botão direito na imagem, selecione "Compartilhar" e copie o ID da URL de compartilhamento (é a parte entre `/d/` e `/view`). Para usar com `https://drive.google.com/uc?id=`, substitua `SEU_ID_DA_IMAGEM`.</li>
-                </ul>
             </ol>
         </div>
 
@@ -285,7 +279,8 @@
             context.fillStyle = '#000000'; // Cor do texto preta
 
             let lines = [];
-            let words = text.split(' ');
+            // Converte o texto para maiúsculas AQUI
+            let words = text.toUpperCase().split(' ');
             let currentLine = words[0] || '';
 
             // Quebra de linha para caber na largura máxima
@@ -356,8 +351,8 @@
                 for (let i = 0; i < themes.length; i++) {
                     const theme = themes[i];
                     const lineNumber = i + 1;
-                    // Limpa o nome do arquivo para ser compatível com sistemas de arquivos
-                    const cleanThemeName = theme.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '-').substring(0, 50); // Limita o tamanho do nome
+                    // Converte o tema para maiúsculas antes de limpar e usar no nome do arquivo
+                    const cleanThemeName = theme.toUpperCase().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '-').substring(0, 50); // Limita o tamanho do nome
                     const fileName = `tema ${lineNumber} - ${cleanThemeName}.png`;
 
                     // Limpa o canvas antes de desenhar a nova capa
@@ -369,7 +364,7 @@
                     // Configurações da área de texto
                     const textArea = TEXT_AREA[selectedCoverType];
 
-                    // Ajusta o texto para caber na área delimitada
+                    // Ajusta o texto (já em maiúsculas) para caber na área delimitada
                     const { lines, fontSize } = fitTextOnCanvas(ctx, theme, textArea.width, textArea.height);
 
                     // Desenha o texto centralizado na área delimitada
@@ -380,7 +375,6 @@
                     // Calcula a posição Y inicial para centralizar verticalmente
                     const lineHeight = fontSize * 1.6;
                     const totalTextHeight = lines.length * lineHeight;
-                    // Ajuste para centralizar verticalmente e mover um pouco mais para baixo
                     const startY = textArea.y + (textArea.height - totalTextHeight) / 2 + (fontSize * 1.0); // Ajuste fino para a linha de base
 
                     lines.forEach((line, index) => {
