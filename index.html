@@ -1,408 +1,617 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Capas para Vídeos</title>
-    <!-- Link para a fonte Oswald do Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-    <!-- Link para Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Link para JSZip (para criar arquivos ZIP) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Link para FileSaver.js (para salvar o arquivo ZIP) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 900px;
-            width: 100%;
-            text-align: center;
-        }
-        .btn {
-            padding: 15px 30px;
-            font-size: 1.25rem;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
-            border: none;
-            color: white;
-            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
-            box-shadow: 0 4px 15px 0 rgba(45, 54, 65, 0.75);
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px 0 rgba(45, 54, 65, 0.75);
-        }
-        .btn-secondary {
-            background-image: linear-gradient(to right, #fc6076 0%, #ff9a44 100%);
-        }
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            resize: vertical;
-            min-height: 150px;
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .spinner {
-            border: 8px solid rgba(255, 255, 255, 0.3);
-            border-top: 8px solid #ffffff;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .instructions {
-            text-align: left;
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .instructions h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        .instructions ol {
-            list-style: decimal;
-            padding-left: 20px;
-        }
-        .instructions li {
-            margin-bottom: 10px;
-            line-height: 1.6;
-            color: #555;
-        }
-        .message-box {
-            display: none; /* Hidden by default */
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 1001;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        .message-box button {
-            background-color: #2575fc;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        /* Canvas hidden for rendering */
-        #hiddenCanvas {
-            display: none;
-        }
-        /* Elemento invisível para forçar o carregamento da fonte Oswald */
-        .preload-font {
-            font-family: 'Oswald';
-            font-weight: 700; /* Bold */
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Capas para Vídeos</title>
+  <!-- Carrega a biblioteca do Tailwind CSS para a estilização -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Carrega o React e ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Carrega o Babel para traduzir o código JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Carrega as fontes do Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Inter:wght@400;700;800;900&display=swap" />
+
+  <style>
+    /* Estilos personalizados */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .preload-font {
+        font-family: 'Oswald';
+        font-weight: 700;
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+    @keyframes slide-in-right {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .animate-slide-in-right {
+      animation: slide-in-right 0.5s forwards;
+    }
+    .pointer-events-none {
+      pointer-events: none;
+    }
+  </style>
 </head>
-<body class="font-inter">
-    <div class="container">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Gerador de Capas para Vídeos</h1>
+<body class="bg-gray-50 dark:bg-gray-950 transition-colors duration-500">
+  <!-- Onde o nosso aplicativo React será renderizado -->
+  <div id="root"></div>
 
-        <div id="typeSelection" class="flex justify-center mb-8">
-            <button id="standardBtn" class="btn">Versão Padrão</button>
-            <button id="librasBtn" class="btn btn-secondary">Versão LIBRAS</button>
-        </div>
+  <!-- O nosso código React, transpilado pelo Babel -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
 
-        <div id="inputSection" class="hidden">
-            <textarea id="themeInput" placeholder="Cole ou digite aqui os temas dos vídeos, apenas um tema por linha. Cada linha irá gerar uma capa com o tema inserido."></textarea>
-            <button id="generateBtn" class="btn mt-6">Gerar Capas</button>
-        </div>
+    // Componente para ícones
+    const LucideIcon = ({ name, className = "" }) => {
+      const icons = {
+        sun: (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M12 2v2" /><path d="M12 22v-2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m4.93 19.07 1.41-1.41" /><path d="m17.66 6.34 1.41-1.41" /><circle cx="12" cy="12" r="4" />
+          </svg>
+        ),
+        moon: (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        ),
+        monitor: (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" />
+          </svg>
+        ),
+        download: (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" />
+          </svg>
+        ),
+      };
+      return icons[name] || null;
+    };
 
-        <div id="howToUse" class="instructions hidden">
-            <h3>Como Utilizar:</h3>
-            <ol>
-                <li>Selecione o *tipo de capa* desejado: "Versão Padrão" ou "Versão LIBRAS".</li>
-                <li>Na caixa de texto que aparecerá, *cole todos os temas*, um tema por linha. Cada linha será uma capa diferente.</li>
-                <li>Clique no botão "*Gerar Capas*".</li>
-                <li>Aguarde enquanto as capas são criadas. Um indicador de progresso aparecerá.</li>
-                <li>As capas serão baixadas automaticamente em um arquivo ZIP, nomeadas como "tema [número da linha] - [nome do tema].png".</li>
-            </ol>
-        </div>
-
-        <button id="showInstructionsBtn" class="btn mt-6 bg-gray-500 hover:bg-gray-600">Como Usar?</button>
-    </div>
-
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-    </div>
-
-    <div id="messageBox" class="message-box">
-        <p id="messageText"></p>
-        <button onclick="document.getElementById('messageBox').style.display = 'none';">OK</button>
-    </div>
-
-    <!-- Canvas oculto para renderização das imagens -->
-    <canvas id="hiddenCanvas" width="1920" height="1080"></canvas>
-
-    <!-- Elemento invisível para forçar o carregamento da fonte Oswald -->
-    <div class="preload-font">.</div>
-
-    <script>
-        // Função para exibir mensagens personalizadas
-        function showMessage(message) {
-            document.getElementById('messageText').innerText = message;
-            document.getElementById('messageBox').style.display = 'block';
+    // Componente para o Modal/Toast de notificação
+    const Toast = ({ message, type, onClose }) => {
+      useEffect(() => {
+        if (message) {
+          const timer = setTimeout(onClose, 5000);
+          return () => clearTimeout(timer);
         }
+      }, [message, onClose]);
 
-        // URLs das imagens de fundo (SUBSTITUA PELOS SEUS LINKS DIRETOS)
-        // Usei links do Imgur como exemplo para garantir que funcionem fora do Google Drive
-        const standardImageUrl = 'https://i.imgur.com/UnzeMmo.png'; // Imagem de placeholder para Versão Padrão
-        const librasImageUrl = 'https://i.imgur.com/WWBaVsI.png';   // Imagem de placeholder para Versão LIBRAS
+      if (!message) return null;
 
-        let selectedCoverType = null; // 'standard' or 'libras'
+      const typeStyles = {
+        success: "bg-green-500",
+        error: "bg-red-500",
+        info: "bg-blue-500",
+      };
 
-        const standardBtn = document.getElementById('standardBtn');
-        const librasBtn = document.getElementById('librasBtn');
-        const inputSection = document.getElementById('inputSection');
-        const themeInput = document.getElementById('themeInput');
-        const generateBtn = document.getElementById('generateBtn');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const howToUse = document.getElementById('howToUse');
-        const showInstructionsBtn = document.getElementById('showInstructionsBtn');
-        const hiddenCanvas = document.getElementById('hiddenCanvas');
-        const ctx = hiddenCanvas.getContext('2d');
+      return (
+        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white ${typeStyles[type]} z-50 animate-slide-in-right`}>
+          {message}
+        </div>
+      );
+    };
 
-        // Dimensões do canvas
-        const CANVAS_WIDTH = 1920;
-        const CANVAS_HEIGHT = 1080;
+    // Componente para a Pré-visualização e Ações
+    const PreviewAndActions = ({
+      coverType,
+      generatedCovers,
+      isGeneratingPreviews,
+      onDownloadAll,
+      onDownloadIndividual,
+      onClearAll,
+      isScriptsLoading
+    }) => {
+      const [showClearConfirm, setShowClearConfirm] = useState(false);
+      const hasValidCovers = generatedCovers.length > 0;
+      const downloadButtonDisabled = isScriptsLoading || !hasValidCovers;
 
-        // Coordenadas e dimensões aproximadas para a área de texto (baseado nas imagens de delimitação)
-        const TEXT_AREA = {
-            standard: {
-                x: CANVAS_WIDTH * 0.15,
-                y: CANVAS_HEIGHT * 0.25, // Ajustado para centralizar melhor o texto verticalmente
-                width: CANVAS_WIDTH * 0.7,
-                height: CANVAS_HEIGHT * 0.5 // Maior altura para acomodar mais linhas
-            },
-            libras: {
-                x: CANVAS_WIDTH * 0.10,
-                y: CANVAS_HEIGHT * 0.25, // Ajustado para centralizar melhor o texto verticalmente
-                width: CANVAS_WIDTH * 0.55,
-                height: CANVAS_HEIGHT * 0.5 // Maior altura para acomodar mais linhas
-            }
+      return (
+        <div className="flex-1 flex flex-col items-center justify-start p-6 bg-gray-100 dark:bg-gray-800 rounded-3xl shadow-inner-md transition-colors duration-500 overflow-y-auto">
+          <h2 className="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">
+            {hasValidCovers ? "Capas Geradas" : "Pré-visualização"}
+          </h2>
+          {isScriptsLoading ? (
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-xl shadow-inner-lg aspect-video flex flex-col items-center justify-center mb-6">
+              <svg className="animate-spin h-8 w-8 text-indigo-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="text-gray-500 dark:text-gray-400">Carregando bibliotecas...</p>
+            </div>
+          ) : isGeneratingPreviews && !hasValidCovers ? (
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-xl shadow-inner-lg aspect-video flex items-center justify-center mb-6">
+              <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          ) : hasValidCovers ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+              {generatedCovers.map((cover, index) => (
+                <div key={index} className="relative group rounded-xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105">
+                  <img src={cover.dataUrl} alt={`Capa ${index + 1}`} className="w-full aspect-video object-contain" />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button
+                      onClick={() => onDownloadIndividual(cover)}
+                      className="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-300"
+                      title="Baixar individualmente"
+                    >
+                      <LucideIcon name="download" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-xl shadow-inner-lg aspect-video flex items-center justify-center mb-6">
+              <span className="text-gray-500 dark:text-gray-400 text-center p-4">
+                {coverType ? 'Adicione temas para ver as pré-visualizações aqui.' : 'Selecione o tipo de capa para começar.'}
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full justify-center">
+            <button
+              onClick={onDownloadAll}
+              disabled={downloadButtonDisabled}
+              className={`flex-1 flex items-center justify-center p-4 rounded-xl font-bold transition-all duration-300 shadow-lg text-white bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 ${downloadButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <LucideIcon name="download" className="mr-2" /> Baixar todas em ZIP
+            </button>
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="flex-1 p-4 rounded-xl font-bold transition-all duration-300 shadow-lg text-gray-800 dark:text-gray-100 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600"
+            >
+              Limpar tudo
+            </button>
+          </div>
+
+          {/* Modal de confirmação para limpar tudo */}
+          {showClearConfirm && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
+                <p className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Tem certeza que deseja limpar tudo?</p>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => { onClearAll(); setShowClearConfirm(false); }}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+                  >
+                    Sim
+                  </button>
+                  <button
+                    onClick={() => setShowClearConfirm(false)}
+                    className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg transition duration-300"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+
+    // Componente principal da aplicação
+    const App = () => {
+      // Estado para o tema
+      const [theme, setTheme] = useState('system');
+      const [selectedCoverType, setSelectedCoverType] = useState(null);
+      const [themes, setThemes] = useState(['']); // Array para as entradas de texto dinâmicas
+      const [isGeneratingPreviews, setIsGeneratingPreviews] = useState(false);
+      const [toast, setToast] = useState({ message: '', type: '' });
+      const [showInstructions, setShowInstructions] = useState(false);
+      const [generatedCovers, setGeneratedCovers] = useState([]);
+      const [isScriptsLoading, setIsScriptsLoading] = useState(true);
+      const [scriptsLoaded, setScriptsLoaded] = useState(false);
+
+      // Referência para o canvas oculto
+      const hiddenCanvasRef = useRef(null);
+      const debounceTimeoutRef = useRef(null);
+
+      // URLs das imagens de fundo, agora usando placeholders
+      const standardImageUrl = 'https://i.imgur.com/UnzeMmo.png';
+      const librasImageUrl = 'https://i.imgur.com/WWBaVsI.png';
+
+      const CANVAS_WIDTH = 1920;
+      const CANVAS_HEIGHT = 1080;
+
+      const TEXT_AREA = {
+        standard: {
+          x: CANVAS_WIDTH * 0.15,
+          y: CANVAS_HEIGHT * 0.25,
+          width: CANVAS_WIDTH * 0.7,
+          height: CANVAS_HEIGHT * 0.5,
+        },
+        libras: {
+          x: CANVAS_WIDTH * 0.10,
+          y: CANVAS_HEIGHT * 0.25,
+          width: CANVAS_WIDTH * 0.55,
+          height: CANVAS_HEIGHT * 0.5,
+        },
+      };
+
+      // Efeitos para gerenciar o tema
+      useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+          setTheme(savedTheme);
+        }
+      }, []);
+
+      useEffect(() => {
+        const applyTheme = (currentTheme) => {
+          const isDark = currentTheme === 'dark' || (currentTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', isDark);
         };
 
-        // Event Listeners para os botões de seleção de tipo de capa
-        standardBtn.addEventListener('click', () => {
-            selectedCoverType = 'standard';
-            inputSection.classList.remove('hidden');
-            standardBtn.classList.add('bg-blue-700', 'shadow-lg');
-            librasBtn.classList.remove('bg-blue-700', 'shadow-lg');
-            howToUse.classList.add('hidden'); // Esconde as instruções ao selecionar
-        });
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
 
-        librasBtn.addEventListener('click', () => {
-            selectedCoverType = 'libras';
-            inputSection.classList.remove('hidden');
-            librasBtn.classList.add('bg-blue-700', 'shadow-lg');
-            standardBtn.classList.remove('bg-blue-700', 'shadow-lg');
-            howToUse.classList.add('hidden'); // Esconde as instruções ao selecionar
-        });
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleSystemThemeChange = () => {
+          if (theme === 'system') {
+            applyTheme('system');
+          }
+        };
+        mediaQuery.addEventListener('change', handleSystemThemeChange);
 
-        // Event Listener para o botão "Como Usar?"
-        showInstructionsBtn.addEventListener('click', () => {
-            howToUse.classList.toggle('hidden');
-        });
+        return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      }, [theme]);
+      
+      // Efeito para carregar as bibliotecas de download dinamicamente
+      useEffect(() => {
+        const loadScript = (url) => {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error(`Falha ao carregar o script: ${url}`));
+            document.head.appendChild(script);
+          });
+        };
 
-        // Função para carregar a imagem de fundo
-        function loadImage(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous'; // Necessário para evitar problemas de CORS ao desenhar em canvas
-                img.onload = () => resolve(img);
-                img.onerror = () => reject(new Error('Falha ao carregar a imagem de fundo. Verifique o URL.'));
-                img.src = url;
-            });
+        const loadLibraries = async () => {
+          try {
+            await Promise.all([
+              loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'),
+              loadScript('https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js')
+            ]);
+            setScriptsLoaded(true);
+            setIsScriptsLoading(false);
+            showToast('As bibliotecas de download foram carregadas com sucesso!', 'success');
+          } catch (error) {
+            console.error(error);
+            setIsScriptsLoading(false);
+            showToast('Erro ao carregar as bibliotecas de download. A funcionalidade pode não estar disponível.', 'error');
+          }
+        };
+
+        loadLibraries();
+      }, []);
+
+
+      const showToast = (message, type = 'info') => {
+        setToast({ message, type });
+      };
+
+      // Funções de manipulação de input dinâmico
+      const handleThemeChange = (index, value) => {
+        const newThemes = [...themes];
+        newThemes[index] = value;
+        setThemes(newThemes);
+        // Adiciona um novo campo se o último campo não estiver vazio
+        if (index === newThemes.length - 1 && value.trim() !== '') {
+          setThemes([...newThemes, '']);
         }
+        // Remove o último campo se ele estiver vazio
+        if (index < newThemes.length - 1 && value.trim() === '' && newThemes[newThemes.length - 1].trim() === '') {
+          setThemes(newThemes.slice(0, newThemes.length - 1));
+        }
+      };
 
-        // Função para ajustar o tamanho da fonte para caber na área
-        function fitTextOnCanvas(context, text, maxWidth, maxHeight, initialFontSize = 90) {
-            let fontSize = initialFontSize;
-            context.font = `bold ${fontSize}pt Oswald`;
-            context.textAlign = 'center';
-            context.fillStyle = '#000000'; // Cor do texto preta
+      // Função para carregar a imagem de fundo
+      const loadImage = useCallback((url) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = 'Anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = (e) => {
+            console.error('Falha ao carregar a imagem de fundo. Verifique o URL.', e);
+            reject(new Error('Falha ao carregar a imagem de fundo. Verifique o URL.'));
+          };
+          img.src = url;
+        });
+      }, []);
 
-            let lines = [];
-            // Converte o texto para maiúsculas AQUI
-            let words = text.toUpperCase().split(' ');
-            let currentLine = words[0] || '';
+      // Função para ajustar o tamanho da fonte para caber na área
+      const fitTextOnCanvas = useCallback((context, text, maxWidth, maxHeight, initialFontSize = 90) => {
+        let fontSize = initialFontSize;
+        context.font = `bold ${fontSize}pt Oswald`;
+        context.textAlign = 'center';
 
-            // Quebra de linha para caber na largura máxima
-            for (let i = 1; i < words.length; i++) {
-                let testLine = currentLine + ' ' + words[i];
-                let metrics = context.measureText(testLine);
-                if (metrics.width < maxWidth) {
-                    currentLine = testLine;
-                } else {
-                    lines.push(currentLine);
-                    currentLine = words[i];
-                }
-            }
+        let lines = [];
+        let words = text.toUpperCase().split(' ');
+        let currentLine = words[0] || '';
+
+        for (let i = 1; i < words.length; i++) {
+          let testLine = currentLine + ' ' + words[i];
+          let metrics = context.measureText(testLine);
+          if (metrics.width < maxWidth) {
+            currentLine = testLine;
+          } else {
             lines.push(currentLine);
-
-            // Ajusta o tamanho da fonte para caber na altura máxima
-            let textHeight = lines.length * fontSize * 1.6; // Multiplicador para espaçamento entre linhas
-            while (textHeight > maxHeight && fontSize > 10) { // Limite mínimo de fonte para evitar loops infinitos
-                fontSize -= 5; // Reduz o tamanho da fonte em passos maiores
-                context.font = `bold ${fontSize}pt Oswald`; // Atualizar a fonte com o novo tamanho
-                lines = [];
-                currentLine = words[0] || '';
-                for (let i = 1; i < words.length; i++) {
-                    let testLine = currentLine + ' ' + words[i];
-                    let metrics = context.measureText(testLine);
-                    if (metrics.width < maxWidth) {
-                        currentLine = testLine;
-                    } else {
-                        lines.push(currentLine);
-                        currentLine = words[i];
-                    }
-                }
-                lines.push(currentLine);
-                textHeight = lines.length * fontSize * 1.6; // Usar o novo multiplicador aqui também
-            }
-            return { lines, fontSize };
+            currentLine = words[i];
+          }
         }
+        lines.push(currentLine);
 
-        // Event Listener para o botão "Gerar Capas"
-        generateBtn.addEventListener('click', async () => {
-            if (!selectedCoverType) {
-                showMessage('Por favor, selecione o tipo de capa (Padrão ou LIBRAS) primeiro.');
-                return;
+        let textHeight = lines.length * fontSize * 1.6;
+        while (textHeight > maxHeight && fontSize > 10) {
+          fontSize -= 5;
+          context.font = `bold ${fontSize}pt Oswald`;
+          lines = [];
+          currentLine = words[0] || '';
+          for (let i = 1; i < words.length; i++) {
+            let testLine = currentLine + ' ' + words[i];
+            let metrics = context.measureText(testLine);
+            if (metrics.width < maxWidth) {
+              currentLine = testLine;
+            } else {
+              lines.push(currentLine);
+              currentLine = words[i];
             }
+          }
+          lines.push(currentLine);
+          textHeight = lines.length * fontSize * 1.6;
+        }
+        return { lines, fontSize };
+      }, []);
 
-            const themes = themeInput.value.split('\n').map(theme => theme.trim()).filter(theme => theme !== '');
+      // Função para gerar uma única capa e retornar o Data URL
+      const generateSingleCover = useCallback(async (theme, coverType) => {
+        const imageUrl = coverType === 'standard' ? standardImageUrl : librasImageUrl;
+        const baseImage = await loadImage(imageUrl);
 
-            if (themes.length === 0) {
-                showMessage('Por favor, insira pelo menos um tema na caixa de texto.');
-                return;
-            }
+        const canvas = hiddenCanvasRef.current;
+        if (!canvas) {
+          console.error("Canvas element not found in ref.");
+          return null;
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.drawImage(baseImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-            loadingOverlay.style.display = 'flex'; // Mostra o indicador de carregamento
+        const textArea = TEXT_AREA[coverType];
+        const { lines, fontSize } = fitTextOnCanvas(ctx, theme, textArea.width, textArea.height);
 
-            try {
-                // Espera a fonte Oswald ser carregada antes de continuar
-                await document.fonts.ready;
-                // Uma verificação mais robusta do carregamento da fonte
-                if (!document.fonts.check('700 12px Oswald')) { // Verifica o peso 700 e um tamanho base
-                    console.warn("A fonte Oswald Bold pode não ter sido carregada corretamente. Usando fallback.");
-                }
+        ctx.font = `bold ${fontSize}pt Oswald`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
 
-                const imageUrl = selectedCoverType === 'standard' ? standardImageUrl : librasImageUrl;
-                const baseImage = await loadImage(imageUrl);
+        const lineHeight = fontSize * 1.6;
+        const totalTextHeight = lines.length * lineHeight;
+        const startY = textArea.y + (textArea.height - totalTextHeight) / 2 + (fontSize * 1.0);
 
-                const zip = new JSZip(); // Inicializa o objeto JSZip
-
-                for (let i = 0; i < themes.length; i++) {
-                    const theme = themes[i];
-                    const lineNumber = i + 1;
-                    // Converte o tema para maiúsculas antes de limpar e usar no nome do arquivo
-                    const cleanThemeName = theme.toUpperCase().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '-').substring(0, 50); // Limita o tamanho do nome
-                    const fileName = `tema ${lineNumber} - ${cleanThemeName}.png`;
-
-                    // Limpa o canvas antes de desenhar a nova capa
-                    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-                    // Desenha a imagem de fundo
-                    ctx.drawImage(baseImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-                    // Configurações da área de texto
-                    const textArea = TEXT_AREA[selectedCoverType];
-
-                    // Ajusta o texto (já em maiúsculas) para caber na área delimitada
-                    const { lines, fontSize } = fitTextOnCanvas(ctx, theme, textArea.width, textArea.height);
-
-                    // Desenha o texto centralizado na área delimitada
-                    ctx.font = `bold ${fontSize}pt Oswald`;
-                    ctx.fillStyle = '#000000'; // Cor do texto preta
-                    ctx.textAlign = 'center';
-
-                    // Calcula a posição Y inicial para centralizar verticalmente
-                    const lineHeight = fontSize * 1.6;
-                    const totalTextHeight = lines.length * lineHeight;
-                    const startY = textArea.y + (textArea.height - totalTextHeight) / 2 + (fontSize * 1.0); // Ajuste fino para a linha de base
-
-                    lines.forEach((line, index) => {
-                        ctx.fillText(line, textArea.x + textArea.width / 2, startY + index * lineHeight);
-                    });
-
-                    // Converte a imagem do canvas para base64 (sem o prefixo "data:image/png;base64,")
-                    const dataUrl = hiddenCanvas.toDataURL('image/png');
-                    const base64Data = dataUrl.split(',')[1];
-
-                    // Adiciona a imagem ao arquivo ZIP
-                    zip.file(fileName, base64Data, { base64: true });
-                }
-
-                // Gera o arquivo ZIP e força o download
-                zip.generateAsync({ type: "blob" })
-                    .then(function(content) {
-                        saveAs(content, "capas_videos.zip"); // Usa FileSaver.js para salvar
-                        showMessage('Capas geradas e baixadas com sucesso em um arquivo ZIP!');
-                    });
-
-            } catch (error) {
-                console.error('Erro ao gerar capas:', error);
-                showMessage('Ocorreu um erro ao gerar as capas. Verifique o console para mais detalhes e certifique-se de que os links das imagens estão corretos e acessíveis.');
-            } finally {
-                loadingOverlay.style.display = 'none'; // Esconde o indicador de carregamento
-            }
+        lines.forEach((line, index) => {
+          ctx.fillText(line, textArea.x + textArea.width / 2, startY + index * lineHeight);
         });
-    </script>
+
+        return canvas.toDataURL('image/png');
+      }, [loadImage, fitTextOnCanvas, TEXT_AREA]);
+      
+      // Efeito para gerar as pré-visualizações em tempo real com debounce
+      useEffect(() => {
+        const generatePreviews = async () => {
+          const validThemes = themes.filter(theme => theme.trim() !== '');
+          if (!selectedCoverType || validThemes.length === 0) {
+            setGeneratedCovers([]);
+            return;
+          }
+          
+          setIsGeneratingPreviews(true);
+          try {
+            await document.fonts.ready;
+            const covers = await Promise.all(validThemes.map(theme => generateSingleCover(theme, selectedCoverType)));
+            
+            const coversWithNames = covers.filter(Boolean).map((dataUrl, index) => { // Filtra nulls em caso de erro
+              const themeName = validThemes[index].toUpperCase().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '-').substring(0, 50);
+              return { dataUrl, fileName: `tema ${index + 1} - ${themeName}.png` };
+            });
+            
+            setGeneratedCovers(coversWithNames);
+          } catch (error) {
+            console.error("Erro ao gerar as pré-visualizações:", error);
+            showToast('Ocorreu um erro ao gerar as pré-visualizações.', 'error');
+            setGeneratedCovers([]);
+          } finally {
+            setIsGeneratingPreviews(false);
+          }
+        };
+
+        // Limpa o timeout anterior para o debounce
+        if (debounceTimeoutRef.current) {
+          clearTimeout(debounceTimeoutRef.current);
+        }
+        // Define um novo timeout para a geração das capas (500ms de atraso)
+        debounceTimeoutRef.current = setTimeout(generatePreviews, 500);
+
+        // Função de limpeza do useEffect
+        return () => {
+          if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+          }
+        };
+      }, [themes, selectedCoverType, generateSingleCover]);
+
+
+      // Função para baixar todas as capas em um ZIP
+      const handleDownloadZip = async () => {
+        if (!scriptsLoaded) {
+          showToast('As bibliotecas de download ainda não foram carregadas. Tente novamente em alguns segundos.', 'error');
+          return;
+        }
+        if (generatedCovers.length === 0) {
+          showToast('Nenhuma capa para baixar. Adicione temas para gerar as capas.', 'error');
+          return;
+        }
+        
+        const zip = new window.JSZip();
+        generatedCovers.forEach(cover => {
+          const base64Data = cover.dataUrl.split(',')[1];
+          zip.file(cover.fileName, base64Data, { base64: true });
+        });
+        const content = await zip.generateAsync({ type: "blob" });
+        window.saveAs(content, "capas_videos.zip");
+        showToast('Download do ZIP iniciado.', 'success');
+      };
+
+      // Função para baixar uma capa individualmente
+      const handleDownloadIndividual = (cover) => {
+        if (!scriptsLoaded) {
+          showToast('A biblioteca de download ainda não foi carregada. Tente novamente em alguns segundos.', 'error');
+          return;
+        }
+        window.saveAs(cover.dataUrl, cover.fileName);
+        showToast(`Download de '${cover.fileName}' iniciado.`, 'success');
+      };
+
+      const handleClearAll = () => {
+        setThemes(['']);
+        setSelectedCoverType(null);
+        setGeneratedCovers([]);
+        showToast('Tudo foi limpo com sucesso!', 'info');
+      };
+
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 p-4 sm:p-8 font-inter flex flex-col items-center relative">
+          
+          <div className="preload-font">.</div>
+          
+          {/* Botões de seleção de tema movidos para o canto superior direito */}
+          <div className="absolute top-4 right-4 flex justify-end gap-2 z-10">
+            {['light', 'dark', 'system'].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTheme(t)}
+                className={`p-2 rounded-lg transition-all duration-300 shadow-md ${theme === t ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                title={t.charAt(0).toUpperCase() + t.slice(1)}
+              >
+                <LucideIcon name={t === 'light' ? 'sun' : t === 'dark' ? 'moon' : 'monitor'} />
+              </button>
+            ))}
+          </div>
+
+          <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 mt-12">
+            {/* Painel de Controle */}
+            <div className="flex-1 bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-lg transition-colors duration-500">
+              <header className="mb-8">
+                <h1 className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">Gerador de Capas</h1>
+                <p className="text-gray-500 dark:text-gray-400 text-base">Selecione o tipo de capa desejada para o seu vídeo.</p>
+              </header>
+
+              {/* Seletor de Tipo de Capa */}
+              <div className="mb-6">
+                <h2 className="text-xl font-bold mb-3">Tipo de Capa</h2>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={() => setSelectedCoverType('standard')}
+                    className={`flex-1 p-4 rounded-2xl font-bold transition-all duration-300 shadow-lg ${selectedCoverType === 'standard' ? 'bg-indigo-600 text-white transform scale-105' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  >
+                    Versão Padrão
+                  </button>
+                  <button
+                    onClick={() => setSelectedCoverType('libras')}
+                    className={`flex-1 p-4 rounded-2xl font-bold transition-all duration-300 shadow-lg ${selectedCoverType === 'libras' ? 'bg-fuchsia-600 text-white transform scale-105' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  >
+                    Versão LIBRAS
+                  </button>
+                </div>
+              </div>
+
+              {/* Área de Input de Temas Dinâmicos */}
+              {selectedCoverType && (
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold mb-3">Temas dos Vídeos</h2>
+                  <div className="flex flex-col gap-3">
+                    {themes.map((theme, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        value={theme}
+                        onChange={(e) => handleThemeChange(index, e.target.value)}
+                        placeholder={`Insira o tema ${index + 1}`}
+                        className="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none transition-colors duration-300"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => setShowInstructions(!showInstructions)}
+                  className="p-4 rounded-xl font-bold transition-all duration-300 shadow-lg text-gray-800 dark:text-gray-100 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                >
+                  Como Usar?
+                </button>
+              </div>
+            </div>
+
+            {/* Pré-visualização e Ações */}
+            <PreviewAndActions
+              coverType={selectedCoverType}
+              generatedCovers={generatedCovers}
+              isGeneratingPreviews={isGeneratingPreviews}
+              onDownloadAll={handleDownloadZip}
+              onDownloadIndividual={handleDownloadIndividual}
+              onClearAll={handleClearAll}
+              isScriptsLoading={isScriptsLoading}
+            />
+          </div>
+
+          {/* Modal de Instruções */}
+          {showInstructions && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
+                <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Como Usar</h3>
+                <ol className="text-left text-gray-600 dark:text-gray-400 list-decimal list-inside space-y-2">
+                  <li>Selecione o tipo de capa: "Padrão" ou "LIBRAS".</li>
+                  <li>Preencha os temas um por um nos campos de texto. Um novo campo aparecerá automaticamente.</li>
+                  <li>As pré-visualizações aparecerão na área ao lado em tempo real.</li>
+                  <li>Clique no ícone de download para baixar uma capa individualmente ou use o botão "Baixar todas as capas" para fazer o download de um arquivo ZIP.</li>
+                </ol>
+                <button
+                  onClick={() => setShowInstructions(false)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 mt-6"
+                >
+                  Entendi
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Toast de Notificação */}
+          <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: '' })} />
+
+          {/* Canvas oculto para renderização, agora DENTRO do componente React */}
+          <canvas id="hiddenCanvas" ref={hiddenCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="hidden" />
+        </div>
+      );
+    };
+
+    // Renderiza o componente na div com id="root"
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+  </script>
 </body>
 </html>
