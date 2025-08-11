@@ -4,8 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Capas para Vídeos</title>
+  
   <!-- Carrega a biblioteca do Tailwind CSS para a estilização -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Configura o Tailwind para usar a classe 'dark' para alternar o tema -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
   <!-- Carrega o React e ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -198,11 +205,31 @@
       );
     };
 
+    // Hook personalizado para gerenciar o tema
+    const useTheme = () => {
+      const [theme, setTheme] = useState(localStorage.getItem('theme') || 'system');
+    
+      useEffect(() => {
+        const root = window.document.documentElement;
+        
+        // Remove classes de tema existentes para evitar conflitos
+        root.classList.remove('light', 'dark');
+
+        // Adiciona a classe com base no tema atual
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        root.classList.add(isDark ? 'dark' : 'light');
+
+        localStorage.setItem('theme', theme);
+      }, [theme]);
+    
+      return [theme, setTheme];
+    };
 
     // Componente principal da aplicação
     const App = () => {
-      // Estado para o tema
-      const [theme, setTheme] = useState('system');
+      // Usa o hook personalizado para gerenciar o tema
+      const [theme, setTheme] = useTheme();
+
       const [selectedCoverType, setSelectedCoverType] = useState(null);
       const [themes, setThemes] = useState(['']); // Array para as entradas de texto dinâmicas
       const [isGeneratingPreviews, setIsGeneratingPreviews] = useState(false);
@@ -237,34 +264,6 @@
           height: CANVAS_HEIGHT * 0.5,
         },
       };
-
-      // Efeitos para gerenciar o tema
-      useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-          setTheme(savedTheme);
-        }
-      }, []);
-
-      useEffect(() => {
-        const applyTheme = (currentTheme) => {
-          const isDark = currentTheme === 'dark' || (currentTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          document.documentElement.classList.toggle('dark', isDark);
-        };
-
-        localStorage.setItem('theme', theme);
-        applyTheme(theme);
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleSystemThemeChange = () => {
-          if (theme === 'system') {
-            applyTheme('system');
-          }
-        };
-        mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-        return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-      }, [theme]);
       
       // Efeito para carregar as bibliotecas de download dinamicamente
       useEffect(() => {
