@@ -3,200 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador de Capas para Vídeos</title>
+  <title>Gerador de Capas Institucional</title>
   
-  <!-- Carrega a biblioteca do Tailwind CSS para a estilização -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Configura o Tailwind para usar a classe 'dark' para alternar o tema -->
   <script>
     tailwind.config = {
       darkMode: 'class',
     }
   </script>
-  <!-- Carrega o React e ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Carrega o Babel para traduzir o código JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Carrega as fontes do Google Fonts -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Inter:wght@400;700;800;900&display=swap" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Inter:wght@400;700;800;900&family=Onest:wght@900&display=swap" rel="stylesheet">
 
   <style>
-    /* Estilos personalizados */
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    .preload-font {
-        font-family: 'Oswald';
-        font-weight: 700;
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-    }
-    @keyframes slide-in-right {
-      from { transform: translateX(100%); }
-      to { transform: translateX(0); }
-    }
-    .animate-slide-in-right {
-      animation: slide-in-right 0.5s forwards;
-    }
-    .pointer-events-none {
-      pointer-events: none;
-    }
+    body { font-family: 'Inter', sans-serif; }
+    .preload-font-oswald { font-family: 'Oswald'; font-weight: 700; position: absolute; opacity: 0; pointer-events: none; }
+    .preload-font-onest { font-family: 'Onest'; font-weight: 900; position: absolute; opacity: 0; pointer-events: none; }
+    
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+    #hiddenCanvas { display: none; }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-950 transition-colors duration-500">
-  <!-- Onde o nosso aplicativo React será renderizado -->
   <div id="root"></div>
 
-  <!-- O nosso código React, transpilado pelo Babel -->
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
-    // Componente para ícones
     const LucideIcon = ({ name, className = "" }) => {
       const icons = {
-        sun: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M12 2v2" /><path d="M12 22v-2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m4.93 19.07 1.41-1.41" /><path d="m17.66 6.34 1.41-1.41" /><circle cx="12" cy="12" r="4" />
-          </svg>
-        ),
-        moon: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-          </svg>
-        ),
-        monitor: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" />
-          </svg>
-        ),
-        download: (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" />
-          </svg>
-        ),
+        sun: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2v2" /><path d="M12 22v-2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m4.93 19.07 1.41-1.41" /><path d="m17.66 6.34 1.41-1.41" /><circle cx="12" cy="12" r="4" /></svg>,
+        moon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>,
+        monitor: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></svg>,
+        download: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>,
+        trash: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
       };
       return icons[name] || null;
     };
 
-    // Componente para o Modal/Toast de notificação
-    const Toast = ({ message, type, onClose }) => {
-      useEffect(() => {
-        if (message) {
-          const timer = setTimeout(onClose, 5000);
-          return () => clearTimeout(timer);
-        }
-      }, [message, onClose]);
-
-      if (!message) return null;
-
-      const typeStyles = {
-        success: "bg-green-500",
-        error: "bg-red-500",
-        info: "bg-blue-500",
-      };
-
-      return (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white ${typeStyles[type]} z-50 animate-slide-in-right`}>
-          {message}
-        </div>
-      );
-    };
-
-    // Componente para a Pré-visualização e Ações
-    const PreviewAndActions = ({
-      coverType,
-      generatedCovers,
-      isGeneratingPreviews,
-      onDownloadAll,
-      onDownloadIndividual,
-      onClearAll,
-      isScriptsLoading
-    }) => {
+    const PreviewAndActions = ({ coverType, generatedCovers, isGeneratingPreviews, onDownloadAll, onDownloadIndividual, onClearAll, isScriptsLoading }) => {
       const [showClearConfirm, setShowClearConfirm] = useState(false);
       const hasValidCovers = generatedCovers.length > 0;
       const downloadButtonDisabled = isScriptsLoading || !hasValidCovers;
 
       return (
-        <div className="flex-1 flex flex-col items-center justify-start p-6 bg-gray-100 dark:bg-gray-800 rounded-3xl shadow-inner-md transition-colors duration-500 overflow-y-auto">
-          <h2 className="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">
-            {hasValidCovers ? "Capas Geradas" : "Pré-visualização"}
+        <div className="flex-1 flex flex-col items-center justify-start p-6 bg-gray-100 dark:bg-gray-800 rounded-3xl shadow-inner transition-colors duration-500 overflow-y-auto min-h-[500px]">
+          <h2 className="text-xl font-bold mb-6 text-indigo-600 dark:text-indigo-400">
+            {hasValidCovers ? "Pré-visualização das Capas" : "Aguardando Conteúdo"}
           </h2>
+          
           {isScriptsLoading ? (
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-xl shadow-inner-lg aspect-video flex flex-col items-center justify-center mb-6">
-              <svg className="animate-spin h-8 w-8 text-indigo-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <p className="text-gray-500 dark:text-gray-400">Carregando bibliotecas...</p>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-2xl aspect-video flex flex-col items-center justify-center mb-6">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+              <p className="text-gray-500 dark:text-gray-400 font-medium text-sm text-center">Carregando módulos de sistema...</p>
             </div>
           ) : isGeneratingPreviews && !hasValidCovers ? (
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-xl shadow-inner-lg aspect-video flex items-center justify-center mb-6">
-              <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-2xl aspect-video flex items-center justify-center mb-6">
+              <div className="animate-pulse flex flex-col items-center">
+                 <div className="h-12 w-12 bg-indigo-400 rounded-full mb-2 opacity-50"></div>
+                 <div className="h-4 w-32 bg-gray-300 rounded"></div>
+              </div>
             </div>
           ) : hasValidCovers ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full mb-8">
               {generatedCovers.map((cover, index) => (
-                <div key={index} className="relative group rounded-xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105">
+                <div key={index} className="relative group rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                   <img src={cover.dataUrl} alt={`Capa ${index + 1}`} className="w-full aspect-video object-contain" />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button
-                      onClick={() => onDownloadIndividual(cover)}
-                      className="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-300"
-                      title="Baixar individualmente"
-                    >
-                      <LucideIcon name="download" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button onClick={() => onDownloadIndividual(cover)} className="bg-white text-indigo-600 p-3 rounded-full shadow-xl hover:scale-110 transition-transform flex items-center gap-2 font-bold text-xs uppercase">
+                      <LucideIcon name="download" className="w-4 h-4" /> Baixar PNG
                     </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-xl shadow-inner-lg aspect-video flex items-center justify-center mb-6">
-              <span className="text-gray-500 dark:text-gray-400 text-center p-4">
-                {coverType ? 'Adicione temas para ver as pré-visualizações aqui.' : 'Selecione o tipo de capa para começar.'}
-              </span>
+            <div className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl aspect-video flex items-center justify-center mb-6 bg-white/50 dark:bg-gray-900/50">
+              <p className="text-gray-400 dark:text-gray-500 text-center px-8 text-sm">
+                {coverType ? 'Digite os títulos ao lado para visualizar as capas.' : 'Selecione o nível de ensino e modelo primeiro.'}
+              </p>
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full justify-center">
-            <button
-              onClick={onDownloadAll}
-              disabled={downloadButtonDisabled}
-              className={`flex-1 flex items-center justify-center p-4 rounded-xl font-bold transition-all duration-300 shadow-lg text-white bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 ${downloadButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          <div className="flex flex-col sm:flex-row gap-4 mt-auto w-full pt-6">
+            <button 
+                onClick={onDownloadAll} 
+                disabled={downloadButtonDisabled} 
+                className={`flex-1 flex items-center justify-center p-4 rounded-xl font-bold transition-all shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 ${downloadButtonDisabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
             >
-              <LucideIcon name="download" className="mr-2" /> Baixar todas em ZIP
+              <LucideIcon name="download" className="mr-2" /> Baixar Todas (.ZIP)
             </button>
-            <button
-              onClick={() => setShowClearConfirm(true)}
-              className="flex-1 p-4 rounded-xl font-bold transition-all duration-300 shadow-lg text-gray-800 dark:text-gray-100 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600"
+            <button 
+                onClick={() => setShowClearConfirm(true)} 
+                className="px-6 p-4 rounded-xl font-bold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              Limpar tudo
+              <LucideIcon name="trash" />
             </button>
           </div>
 
-          {/* Modal de confirmação para limpar tudo */}
           {showClearConfirm && (
-            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
-                <p className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Tem certeza que deseja limpar tudo?</p>
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={() => { onClearAll(); setShowClearConfirm(false); }}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
-                  >
-                    Sim
-                  </button>
-                  <button
-                    onClick={() => setShowClearConfirm(false)}
-                    className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg transition duration-300"
-                  >
-                    Cancelar
-                  </button>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+                <h3 className="text-xl font-bold mb-2">Limpar Tudo?</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">Você voltará para a tela inicial e perderá os títulos digitados.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => { onClearAll(); setShowClearConfirm(false); }} className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors">Limpar</button>
+                  <button onClick={() => setShowClearConfirm(false)} className="flex-1 bg-gray-100 dark:bg-gray-700 font-bold py-3 rounded-xl transition-colors">Voltar</button>
                 </div>
               </div>
             </div>
@@ -205,412 +124,298 @@
       );
     };
 
-    // Hook personalizado para gerenciar o tema
-    const useTheme = () => {
-      const [theme, setTheme] = useState(localStorage.getItem('theme') || 'system');
-    
-      useEffect(() => {
-        const root = window.document.documentElement;
-        
-        // Remove classes de tema existentes para evitar conflitos
-        root.classList.remove('light', 'dark');
-
-        // Adiciona a classe com base no tema atual
-        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        root.classList.add(isDark ? 'dark' : 'light');
-
-        localStorage.setItem('theme', theme);
-      }, [theme]);
-    
-      return [theme, setTheme];
-    };
-
-    // Componente principal da aplicação
     const App = () => {
-      // Usa o hook personalizado para gerenciar o tema
-      const [theme, setTheme] = useTheme();
-
+      const [theme, setTheme] = useState(localStorage.getItem('theme') || 'system');
+      const [educationLevel, setEducationLevel] = useState(null);
       const [selectedCoverType, setSelectedCoverType] = useState(null);
-      const [themes, setThemes] = useState(['']); // Array para as entradas de texto dinâmicas
+      const [themes, setThemes] = useState(['']);
       const [isGeneratingPreviews, setIsGeneratingPreviews] = useState(false);
-      const [toast, setToast] = useState({ message: '', type: '' });
-      const [showInstructions, setShowInstructions] = useState(false);
       const [generatedCovers, setGeneratedCovers] = useState([]);
       const [isScriptsLoading, setIsScriptsLoading] = useState(true);
-      const [scriptsLoaded, setScriptsLoaded] = useState(false);
 
-      // Referência para o canvas oculto
       const hiddenCanvasRef = useRef(null);
       const debounceTimeoutRef = useRef(null);
 
-      // URLs das imagens de fundo, agora usando placeholders
-      const standardImageUrl = 'https://i.imgur.com/UnzeMmo.png';
-      const librasImageUrl = 'https://i.imgur.com/WWBaVsI.png';
+      const MODELS = {
+        graduacao: { 
+          standard: 'https://i.imgur.com/UnzeMmo.png', 
+          libras: 'https://i.imgur.com/WWBaVsI.png' 
+        },
+        pos: { 
+          standard: 'https://raw.githubusercontent.com/alzejin/gerador-de-capas/7281b3c3d08e1f26e70f8aa4a84bc8f0e5c608a1/Capa_pos_graduacao.png' 
+        }
+      };
 
       const CANVAS_WIDTH = 1920;
       const CANVAS_HEIGHT = 1080;
 
-      const TEXT_AREA = {
-        standard: {
-          x: CANVAS_WIDTH * 0.15,
-          y: CANVAS_HEIGHT * 0.25,
-          width: CANVAS_WIDTH * 0.7,
-          height: CANVAS_HEIGHT * 0.5,
-        },
-        libras: {
-          x: CANVAS_WIDTH * 0.10,
-          y: CANVAS_HEIGHT * 0.25,
-          width: CANVAS_WIDTH * 0.55,
-          height: CANVAS_HEIGHT * 0.5,
-        },
-      };
-      
-      // Efeito para carregar as bibliotecas de download dinamicamente
       useEffect(() => {
-        const loadScript = (url) => {
-          return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = url;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Falha ao carregar o script: ${url}`));
-            document.head.appendChild(script);
-          });
-        };
+        const root = window.document.documentElement;
+        root.classList.remove('light', 'dark');
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        root.classList.add(isDark ? 'dark' : 'light');
+        localStorage.setItem('theme', theme);
+      }, [theme]);
 
+      useEffect(() => {
         const loadLibraries = async () => {
           try {
-            await Promise.all([
-              loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'),
-              loadScript('https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js')
-            ]);
-            setScriptsLoaded(true);
+            const scripts = [
+              'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
+              'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+            ];
+            await Promise.all(scripts.map(src => new Promise((res, rej) => {
+              const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+            })));
             setIsScriptsLoading(false);
-            showToast('As bibliotecas de download foram carregadas com sucesso!', 'success');
-          } catch (error) {
-            console.error(error);
-            setIsScriptsLoading(false);
-            showToast('Erro ao carregar as bibliotecas de download. A funcionalidade pode não estar disponível.', 'error');
-          }
+          } catch (e) { setIsScriptsLoading(false); }
         };
-
         loadLibraries();
       }, []);
 
-
-      const showToast = (message, type = 'info') => {
-        setToast({ message, type });
-      };
-
-      // Funções de manipulação de input dinâmico
-      const handleThemeChange = (index, value) => {
+      const handleThemeChangeInput = (index, value) => {
         const newThemes = [...themes];
         newThemes[index] = value;
+        if (index === newThemes.length - 1 && value.trim() !== '') newThemes.push('');
         setThemes(newThemes);
-        // Adiciona um novo campo se o último campo não estiver vazio
-        if (index === newThemes.length - 1 && value.trim() !== '') {
-          setThemes([...newThemes, '']);
-        }
-        // Remove o último campo se ele estiver vazio
-        if (index < newThemes.length - 1 && value.trim() === '' && newThemes[newThemes.length - 1].trim() === '') {
-          setThemes(newThemes.slice(0, newThemes.length - 1));
-        }
       };
 
-      // Função para carregar a imagem de fundo
-      const loadImage = useCallback((url) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'Anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = (e) => {
-            console.error('Falha ao carregar a imagem de fundo. Verifique o URL.', e);
-            reject(new Error('Falha ao carregar a imagem de fundo. Verifique o URL.'));
-          };
-          img.src = url;
-        });
-      }, []);
+      const getBalancedLines = (text, ctx, maxWidth) => {
+        const words = text.toUpperCase().trim().split(/\s+/);
+        if (words.length === 0) return [];
+        if (words.length === 1) return words;
 
-      // Função para ajustar o tamanho da fonte para caber na área
-      const fitTextOnCanvas = useCallback((context, text, maxWidth, maxHeight, initialFontSize = 90) => {
-        let fontSize = initialFontSize;
-        context.font = `bold ${fontSize}pt Oswald`;
-        context.textAlign = 'center';
-
-        let lines = [];
-        let words = text.toUpperCase().split(' ');
-        let currentLine = words[0] || '';
-
-        for (let i = 1; i < words.length; i++) {
-          let testLine = currentLine + ' ' + words[i];
-          let metrics = context.measureText(testLine);
-          if (metrics.width < maxWidth) {
-            currentLine = testLine;
-          } else {
-            lines.push(currentLine);
-            currentLine = words[i];
-          }
+        if (ctx.measureText(words.join(" ")).width < maxWidth) {
+          if (words.length > 3) return [words.join(" ")];
+          const mid = Math.ceil(words.length / 2);
+          return [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
         }
-        lines.push(currentLine);
 
-        let textHeight = lines.length * fontSize * 1.6;
-        while (textHeight > maxHeight && fontSize > 10) {
-          fontSize -= 5;
-          context.font = `bold ${fontSize}pt Oswald`;
-          lines = [];
-          currentLine = words[0] || '';
-          for (let i = 1; i < words.length; i++) {
-            let testLine = currentLine + ' ' + words[i];
-            let metrics = context.measureText(testLine);
-            if (metrics.width < maxWidth) {
-              currentLine = testLine;
-            } else {
-              lines.push(currentLine);
-              currentLine = words[i];
+        let bestLines = [];
+        let minVariance = Infinity;
+
+        for (let numLines = 2; numLines <= 5; numLines++) {
+          if (numLines > words.length) continue;
+          let currentLines = [];
+          let wordsPerLine = Math.floor(words.length / numLines);
+          let extraWords = words.length % numLines;
+          let start = 0;
+          let ok = true;
+          let widths = [];
+
+          for (let i = 0; i < numLines; i++) {
+            let count = wordsPerLine + (i < extraWords ? 1 : 0);
+            let segment = words.slice(start, start + count).join(" ");
+            let w = ctx.measureText(segment).width;
+            if (w > maxWidth) ok = false;
+            currentLines.push(segment);
+            widths.push(w);
+            start += count;
+          }
+
+          if (ok) {
+            let variance = Math.max(...widths) - Math.min(...widths);
+            if (variance < minVariance) {
+              minVariance = variance;
+              bestLines = currentLines;
             }
           }
-          lines.push(currentLine);
-          textHeight = lines.length * fontSize * 1.6;
         }
-        return { lines, fontSize };
-      }, []);
+        return bestLines.length > 0 ? bestLines : [words.join(" ")];
+      };
 
-      // Função para gerar uma única capa e retornar o Data URL
-      const generateSingleCover = useCallback(async (theme, coverType) => {
-        const imageUrl = coverType === 'standard' ? standardImageUrl : librasImageUrl;
-        const baseImage = await loadImage(imageUrl);
+      const generateSingleCover = useCallback(async (text, level, type) => {
+        const url = MODELS[level][type];
+        const img = await new Promise((res, rej) => {
+          const i = new Image(); i.crossOrigin = 'Anonymous'; i.onload = () => res(i); i.onerror = rej; i.src = url;
+        });
 
         const canvas = hiddenCanvasRef.current;
-        if (!canvas) {
-          console.error("Canvas element not found in ref.");
-          return null;
-        }
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        ctx.drawImage(baseImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        const textArea = TEXT_AREA[coverType];
-        const { lines, fontSize } = fitTextOnCanvas(ctx, theme, textArea.width, textArea.height);
+        const isPos = level === 'pos';
+        const COLOR_OFF_WHITE = '#dde7fc';
+        const COLOR_BRIGHT_BLUE = '#00d0ff';
+        
+        let area = { x: 288, y: 270, w: 1344, h: 540 };
+        if (type === 'libras') area = { x: 192, y: 270, w: 1056, h: 540 };
+        
+        let fontSize = 90;
+        const fontName = isPos ? 'Onest' : 'Oswald';
+        const fontWeight = isPos ? '900' : 'bold';
 
-        ctx.font = `bold ${fontSize}pt Oswald`;
-        ctx.fillStyle = '#000000';
         ctx.textAlign = 'center';
+        ctx.font = `${fontWeight} ${fontSize}pt ${fontName}`;
 
-        const lineHeight = fontSize * 1.6;
-        const totalTextHeight = lines.length * lineHeight;
-        const startY = textArea.y + (textArea.height - totalTextHeight) / 2 + (fontSize * 1.0);
+        let lines = getBalancedLines(text, ctx, area.w);
+        
+        while((lines.length * fontSize * 1.6 > area.h || lines.some(l => ctx.measureText(l).width > area.w)) && fontSize > 20) {
+          fontSize -= 2;
+          ctx.font = `${fontWeight} ${fontSize}pt ${fontName}`;
+          lines = getBalancedLines(text, ctx, area.w);
+        }
 
-        lines.forEach((line, index) => {
-          ctx.fillText(line, textArea.x + textArea.width / 2, startY + index * lineHeight);
+        const lineHeight = fontSize * 1.5;
+        const totalHeight = lines.length * lineHeight;
+        const startY = area.y + (area.h - totalHeight) / 2 + (fontSize * 1.1);
+        
+        lines.forEach((line, i) => {
+          if (isPos) {
+            ctx.fillStyle = (i === lines.length - 1) ? COLOR_BRIGHT_BLUE : COLOR_OFF_WHITE;
+          } else {
+            ctx.fillStyle = '#000000';
+          }
+          ctx.fillText(line, area.x + area.w/2, startY + i * lineHeight);
         });
 
         return canvas.toDataURL('image/png');
-      }, [loadImage, fitTextOnCanvas, TEXT_AREA]);
-      
-      // Efeito para gerar as pré-visualizações em tempo real com debounce
+      }, []);
+
       useEffect(() => {
-        const generatePreviews = async () => {
-          const validThemes = themes.filter(theme => theme.trim() !== '');
-          if (!selectedCoverType || validThemes.length === 0) {
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(async () => {
+          const valid = themes.filter(t => t.trim() !== '');
+          if (!educationLevel || !selectedCoverType || valid.length === 0) {
             setGeneratedCovers([]);
             return;
           }
-          
           setIsGeneratingPreviews(true);
           try {
             await document.fonts.ready;
-            const covers = await Promise.all(validThemes.map(theme => generateSingleCover(theme, selectedCoverType)));
-            
-            const coversWithNames = covers.filter(Boolean).map((dataUrl, index) => { // Filtra nulls em caso de erro
-              const themeName = validThemes[index].toUpperCase().replace(/[^\w\s-]/gi, '').replace(/\s+/g, '-').substring(0, 50);
-              return { dataUrl, fileName: `tema ${index + 1} - ${themeName}.png` };
-            });
-            
-            setGeneratedCovers(coversWithNames);
-          } catch (error) {
-            console.error("Erro ao gerar as pré-visualizações:", error);
-            showToast('Ocorreu um erro ao gerar as pré-visualizações.', 'error');
-            setGeneratedCovers([]);
-          } finally {
-            setIsGeneratingPreviews(false);
-          }
-        };
+            const results = await Promise.all(valid.map(async (t, i) => {
+              const dataUrl = await generateSingleCover(t, educationLevel, selectedCoverType);
+              return { dataUrl, fileName: `capa-${i+1}.png` };
+            }));
+            setGeneratedCovers(results);
+          } catch (e) { console.error(e); }
+          setIsGeneratingPreviews(false);
+        }, 400);
+      }, [themes, educationLevel, selectedCoverType, generateSingleCover]);
 
-        // Limpa o timeout anterior para o debounce
-        if (debounceTimeoutRef.current) {
-          clearTimeout(debounceTimeoutRef.current);
-        }
-        // Define um novo timeout para a geração das capas (500ms de atraso)
-        debounceTimeoutRef.current = setTimeout(generatePreviews, 500);
-
-        // Função de limpeza do useEffect
-        return () => {
-          if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-          }
-        };
-      }, [themes, selectedCoverType, generateSingleCover]);
-
-
-      // Função para baixar todas as capas em um ZIP
       const handleDownloadZip = async () => {
-        if (!scriptsLoaded) {
-          showToast('As bibliotecas de download ainda não foram carregadas. Tente novamente em alguns segundos.', 'error');
-          return;
-        }
-        if (generatedCovers.length === 0) {
-          showToast('Nenhuma capa para baixar. Adicione temas para gerar as capas.', 'error');
-          return;
-        }
-        
         const zip = new window.JSZip();
-        generatedCovers.forEach(cover => {
-          const base64Data = cover.dataUrl.split(',')[1];
-          zip.file(cover.fileName, base64Data, { base64: true });
-        });
+        generatedCovers.forEach(c => zip.file(c.fileName, c.dataUrl.split(',')[1], { base64: true }));
         const content = await zip.generateAsync({ type: "blob" });
-        window.saveAs(content, "capas_videos.zip");
-        showToast('Download do ZIP iniciado.', 'success');
+        window.saveAs(content, `capas-${educationLevel}-${selectedCoverType}.zip`);
       };
 
-      // Função para baixar uma capa individualmente
-      const handleDownloadIndividual = (cover) => {
-        if (!scriptsLoaded) {
-          showToast('A biblioteca de download ainda não foi carregada. Tente novamente em alguns segundos.', 'error');
-          return;
-        }
-        window.saveAs(cover.dataUrl, cover.fileName);
-        showToast(`Download de '${cover.fileName}' iniciado.`, 'success');
-      };
-
-      const handleClearAll = () => {
-        setThemes(['']);
+      const resetAll = () => {
+        setEducationLevel(null);
         setSelectedCoverType(null);
+        setThemes(['']);
         setGeneratedCovers([]);
-        showToast('Tudo foi limpo com sucesso!', 'info');
       };
 
       return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 p-4 sm:p-8 font-inter flex flex-col items-center relative">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 flex flex-col">
+          <div className="preload-font-oswald">.</div>
+          <div className="preload-font-onest">.</div>
           
-          <div className="preload-font">.</div>
-          
-          {/* Botões de seleção de tema movidos para o canto superior direito */}
-          <div className="absolute top-4 right-4 flex justify-end gap-2 z-10">
-            {['light', 'dark', 'system'].map((t) => (
-              <button
-                key={t}
-                onClick={() => setTheme(t)}
-                className={`p-2 rounded-lg transition-all duration-300 shadow-md ${theme === t ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                title={t.charAt(0).toUpperCase() + t.slice(1)}
-              >
-                <LucideIcon name={t === 'light' ? 'sun' : t === 'dark' ? 'moon' : 'monitor'} />
-              </button>
-            ))}
-          </div>
+          <header className="w-full bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 sm:px-10 py-6 sticky top-0 z-50 shadow-sm flex flex-row items-center justify-between">
+            <div className="flex flex-col text-left">
+              <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-400 uppercase tracking-tighter leading-none mb-1">
+                Gerador de Capas
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium hidden sm:block">
+                Selecione o tipo de capa desejado para o seu vídeo
+              </p>
+            </div>
 
-          <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 mt-12">
-            {/* Painel de Controle */}
-            <div className="flex-1 bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-lg transition-colors duration-500">
-              <header className="mb-8">
-                <h1 className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">Gerador de Capas</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-base">Selecione o tipo de capa desejada para o seu vídeo.</p>
-              </header>
+            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 p-1 rounded-2xl border border-gray-100 dark:border-gray-700">
+                {['light', 'dark', 'system'].map(t => (
+                    <button 
+                    key={t} 
+                    onClick={() => setTheme(t)} 
+                    className={`p-2.5 rounded-xl transition-all ${theme === t ? 'text-indigo-600 bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                    title={t === 'light' ? 'Modo Claro' : t === 'dark' ? 'Modo Escuro' : 'Sistema'}
+                    >
+                    <LucideIcon name={t === 'light' ? 'sun' : t === 'dark' ? 'moon' : 'monitor'} className="w-5 h-5" />
+                    </button>
+                ))}
+            </div>
+          </header>
 
-              {/* Seletor de Tipo de Capa */}
-              <div className="mb-6">
-                <h2 className="text-xl font-bold mb-3">Tipo de Capa</h2>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => setSelectedCoverType('standard')}
-                    className={`flex-1 p-4 rounded-2xl font-bold transition-all duration-300 shadow-lg ${selectedCoverType === 'standard' ? 'bg-indigo-600 text-white transform scale-105' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          <main className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 p-6 sm:p-10 w-full flex-1">
+            <div className="lg:col-span-5 space-y-6">
+              
+              <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+                  <span className="flex items-center justify-center w-7 h-7 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full text-xs">01</span>
+                  Nível de Ensino
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => { setEducationLevel('graduacao'); setSelectedCoverType(null); }}
+                    className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${educationLevel === 'graduacao' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:border-indigo-200'}`}
                   >
-                    Versão Padrão
+                    GRADUAÇÃO
                   </button>
-                  <button
-                    onClick={() => setSelectedCoverType('libras')}
-                    className={`flex-1 p-4 rounded-2xl font-bold transition-all duration-300 shadow-lg ${selectedCoverType === 'libras' ? 'bg-fuchsia-600 text-white transform scale-105' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  <button 
+                    onClick={() => { setEducationLevel('pos'); setSelectedCoverType('standard'); }}
+                    className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${educationLevel === 'pos' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:border-indigo-200'}`}
                   >
-                    Versão LIBRAS
+                    PÓS-GRADUAÇÃO
                   </button>
                 </div>
               </div>
 
-              {/* Área de Input de Temas Dinâmicos */}
+              {educationLevel === 'graduacao' && (
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+                    <span className="flex items-center justify-center w-7 h-7 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full text-xs">02</span>
+                    Versão da Capa
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => setSelectedCoverType('standard')} className={`p-4 rounded-2xl border-2 transition-all font-bold text-xs ${selectedCoverType === 'standard' ? 'border-indigo-600 bg-indigo-600 text-white shadow-md' : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200'}`}>PADRÃO</button>
+                    <button onClick={() => setSelectedCoverType('libras')} className={`p-4 rounded-2xl border-2 transition-all font-bold text-xs ${selectedCoverType === 'libras' ? 'border-indigo-600 bg-indigo-600 text-white shadow-md' : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200'}`}>LIBRAS</button>
+                  </div>
+                </div>
+              )}
+
               {selectedCoverType && (
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold mb-3">Temas dos Vídeos</h2>
-                  <div className="flex flex-col gap-3">
-                    {themes.map((theme, index) => (
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+                    <span className="flex items-center justify-center w-7 h-7 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full text-xs">{educationLevel === 'pos' ? '02' : '03'}</span>
+                    Títulos dos Vídeos
+                  </h3>
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {themes.map((t, idx) => (
                       <input
-                        key={index}
+                        key={idx}
                         type="text"
-                        value={theme}
-                        onChange={(e) => handleThemeChange(index, e.target.value)}
-                        placeholder={`Insira o tema ${index + 1}`}
-                        className="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none transition-colors duration-300"
+                        value={t}
+                        onChange={(e) => handleThemeChangeInput(idx, e.target.value)}
+                        placeholder={`Digite o título ${idx + 1}...`}
+                        className="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-transparent focus:border-indigo-400 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all text-sm font-semibold uppercase"
                       />
                     ))}
                   </div>
                 </div>
               )}
-
-              {/* Botões de Ação */}
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={() => setShowInstructions(!showInstructions)}
-                  className="p-4 rounded-xl font-bold transition-all duration-300 shadow-lg text-gray-800 dark:text-gray-100 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-                >
-                  Como Usar?
-                </button>
-              </div>
             </div>
 
-            {/* Pré-visualização e Ações */}
-            <PreviewAndActions
-              coverType={selectedCoverType}
-              generatedCovers={generatedCovers}
-              isGeneratingPreviews={isGeneratingPreviews}
-              onDownloadAll={handleDownloadZip}
-              onDownloadIndividual={handleDownloadIndividual}
-              onClearAll={handleClearAll}
-              isScriptsLoading={isScriptsLoading}
-            />
-          </div>
-
-          {/* Modal de Instruções */}
-          {showInstructions && (
-            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
-                <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Como Usar</h3>
-                <ol className="text-left text-gray-600 dark:text-gray-400 list-decimal list-inside space-y-2">
-                  <li>Selecione o tipo de capa: "Padrão" ou "LIBRAS".</li>
-                  <li>Preencha os temas um por um nos campos de texto. Um novo campo aparecerá automaticamente.</li>
-                  <li>As pré-visualizações aparecerão na área ao lado em tempo real.</li>
-                  <li>Clique no ícone de download para baixar uma capa individualmente ou use o botão "Baixar todas as capas" para fazer o download de um arquivo ZIP.</li>
-                </ol>
-                <button
-                  onClick={() => setShowInstructions(false)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 mt-6"
-                >
-                  Entendi
-                </button>
-              </div>
+            <div className="lg:col-span-7">
+              <PreviewAndActions
+                coverType={selectedCoverType}
+                generatedCovers={generatedCovers}
+                isGeneratingPreviews={isGeneratingPreviews}
+                onDownloadAll={handleDownloadZip}
+                onDownloadIndividual={(c) => window.saveAs(c.dataUrl, c.fileName)}
+                onClearAll={resetAll}
+                isScriptsLoading={isScriptsLoading}
+              />
             </div>
-          )}
+          </main>
 
-          {/* Toast de Notificação */}
-          <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: '' })} />
-
-          {/* Canvas oculto para renderização, agora DENTRO do componente React */}
-          <canvas id="hiddenCanvas" ref={hiddenCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="hidden" />
+          <canvas ref={hiddenCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} id="hiddenCanvas" />
         </div>
       );
     };
 
-    // Renderiza o componente na div com id="root"
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
-
   </script>
 </body>
 </html>
