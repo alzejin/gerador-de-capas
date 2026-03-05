@@ -9,6 +9,18 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            dark: {
+              950: '#0a0c10',
+              900: '#11141a',
+              800: '#1c212b',
+              700: '#2d3545'
+            }
+          }
+        }
+      }
     }
   </script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -17,21 +29,27 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Inter:wght@400;700;800;900&family=Onest:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Inter:wght@400;500;600;700;800;900&family=Onest:wght@900&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
     .preload-font-oswald { font-family: 'Oswald'; font-weight: 700; position: absolute; opacity: 0; pointer-events: none; }
     .preload-font-onest { font-family: 'Onest'; font-weight: 900; position: absolute; opacity: 0; pointer-events: none; }
     
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+    
     #hiddenCanvas { display: none; }
+    
+    .glass-effect {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 transition-colors duration-500">
+<body class="bg-slate-50 dark:bg-dark-950 text-slate-900 dark:text-slate-100 transition-colors duration-500">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -39,11 +57,11 @@
 
     const LucideIcon = ({ name, className = "" }) => {
       const icons = {
-        sun: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2v2" /><path d="M12 22v-2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m4.93 19.07 1.41-1.41" /><path d="m17.66 6.34 1.41-1.41" /><circle cx="12" cy="12" r="4" /></svg>,
-        moon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>,
-        monitor: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></svg>,
-        download: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>,
-        trash: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+        sun: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="m17.66 6.34 1.41-1.41"/></svg>,
+        moon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+        monitor: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>,
+        download: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+        trash: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
       };
       return icons[name] || null;
     };
@@ -54,41 +72,46 @@
       const downloadButtonDisabled = isScriptsLoading || !hasValidCovers;
 
       return (
-        <div className="flex-1 flex flex-col items-center justify-start p-6 bg-gray-100 dark:bg-gray-800 rounded-3xl shadow-inner transition-colors duration-500 overflow-y-auto min-h-[500px]">
-          <h2 className="text-xl font-bold mb-6 text-indigo-600 dark:text-indigo-400">
+        <div className="flex-1 flex flex-col items-center justify-start p-6 bg-slate-200/50 dark:bg-dark-900/50 rounded-[2.5rem] shadow-inner transition-colors duration-500 overflow-y-auto min-h-[500px]">
+          <h2 className={`text-lg font-bold mb-6 transition-colors duration-300 ${hasValidCovers ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-600"}`}>
             {hasValidCovers ? "Pré-visualização das Capas" : "Aguardando Conteúdo"}
           </h2>
           
           {isScriptsLoading ? (
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-2xl aspect-video flex flex-col items-center justify-center mb-6">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
-              <p className="text-gray-500 dark:text-gray-400 font-medium text-sm text-center">Carregando módulos de sistema...</p>
+            <div className="w-full bg-white dark:bg-dark-800 rounded-3xl aspect-video flex flex-col items-center justify-center mb-6 shadow-sm">
+              <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-indigo-500 border-t-transparent mb-4"></div>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-xs">Sincronizando bibliotecas...</p>
             </div>
           ) : isGeneratingPreviews && !hasValidCovers ? (
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-2xl aspect-video flex items-center justify-center mb-6">
+            <div className="w-full bg-white dark:bg-dark-800 rounded-3xl aspect-video flex items-center justify-center mb-6 shadow-sm">
               <div className="animate-pulse flex flex-col items-center">
-                 <div className="h-12 w-12 bg-indigo-400 rounded-full mb-2 opacity-50"></div>
-                 <div className="h-4 w-32 bg-gray-300 rounded"></div>
+                 <div className="h-10 w-10 bg-indigo-500/20 rounded-full mb-3"></div>
+                 <div className="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
               </div>
             </div>
           ) : hasValidCovers ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full mb-8">
               {generatedCovers.map((cover, index) => (
-                <div key={index} className="relative group rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <img src={cover.dataUrl} alt={`Capa ${index + 1}`} className="w-full aspect-video object-contain" />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button onClick={() => onDownloadIndividual(cover)} className="bg-white text-indigo-600 p-3 rounded-full shadow-xl hover:scale-110 transition-transform flex items-center gap-2 font-bold text-xs uppercase">
-                      <LucideIcon name="download" className="w-4 h-4" /> Baixar PNG
+                <div key={index} className="relative group rounded-2xl overflow-hidden shadow-md bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-700 hover:shadow-xl transition-all duration-300">
+                  <img src={cover.dataUrl} alt={`Capa ${index + 1}`} className="w-full aspect-video object-contain bg-slate-100 dark:bg-dark-950" />
+                  <div className="absolute inset-0 bg-indigo-900/60 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <button onClick={() => onDownloadIndividual(cover)} className="bg-white text-indigo-700 px-5 py-2.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 font-bold text-[10px] tracking-wider uppercase">
+                      <LucideIcon name="download" className="w-3.5 h-3.5" /> Baixar PNG
                     </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl aspect-video flex items-center justify-center mb-6 bg-white/50 dark:bg-gray-900/50">
-              <p className="text-gray-400 dark:text-gray-500 text-center px-8 text-sm">
-                {coverType ? 'Digite os títulos ao lado para visualizar as capas.' : 'Selecione o nível de ensino e modelo primeiro.'}
-              </p>
+            <div className="w-full border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl aspect-video flex items-center justify-center mb-6 bg-white/40 dark:bg-dark-800/20">
+              <div className="text-center px-8">
+                 <div className="w-12 h-12 bg-slate-200 dark:bg-dark-700 rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
+                    <LucideIcon name="monitor" className="text-slate-400" />
+                 </div>
+                 <p className="text-slate-400 dark:text-slate-500 text-sm max-w-[220px] mx-auto leading-relaxed">
+                    {coverType ? 'Insira os títulos ao lado para gerar as imagens automaticamente.' : 'Comece selecionando o nível de ensino e modelo.'}
+                 </p>
+              </div>
             </div>
           )}
 
@@ -96,26 +119,29 @@
             <button 
                 onClick={onDownloadAll} 
                 disabled={downloadButtonDisabled} 
-                className={`flex-1 flex items-center justify-center p-4 rounded-xl font-bold transition-all shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 ${downloadButtonDisabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                className={`flex-1 flex items-center justify-center p-4 rounded-2xl font-bold transition-all shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] ${downloadButtonDisabled ? 'opacity-30 grayscale cursor-not-allowed shadow-none' : 'hover:shadow-indigo-500/25'}`}
             >
-              <LucideIcon name="download" className="mr-2" /> Baixar Todas (.ZIP)
+              <LucideIcon name="download" className="mr-2 w-5 h-5" /> Baixar Todas (.ZIP)
             </button>
             <button 
                 onClick={() => setShowClearConfirm(true)} 
-                className="px-6 p-4 rounded-xl font-bold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                className="px-6 p-4 rounded-2xl font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-700 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50 transition-all active:scale-95"
             >
               <LucideIcon name="trash" />
             </button>
           </div>
 
           {showClearConfirm && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+              <div className="bg-white dark:bg-dark-900 p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-dark-700">
+                <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <LucideIcon name="trash" className="w-8 h-8" />
+                </div>
                 <h3 className="text-xl font-bold mb-2">Limpar Tudo?</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">Você voltará para a tela inicial e perderá os títulos digitados.</p>
+                <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm leading-relaxed">Isso apagará todos os títulos e voltará para as configurações iniciais.</p>
                 <div className="flex gap-3">
-                  <button onClick={() => { onClearAll(); setShowClearConfirm(false); }} className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors">Limpar</button>
-                  <button onClick={() => setShowClearConfirm(false)} className="flex-1 bg-gray-100 dark:bg-gray-700 font-bold py-3 rounded-xl transition-colors">Voltar</button>
+                  <button onClick={() => { onClearAll(); setShowClearConfirm(false); }} className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-red-500/20">Limpar</button>
+                  <button onClick={() => setShowClearConfirm(false)} className="flex-1 bg-slate-100 dark:bg-dark-800 text-slate-600 dark:text-slate-300 font-bold py-3.5 rounded-xl transition-colors">Voltar</button>
                 </div>
               </div>
             </div>
@@ -309,94 +335,107 @@
       };
 
       return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 flex flex-col">
+        <div className="min-h-screen transition-colors duration-500 flex flex-col">
           <div className="preload-font-oswald">.</div>
           <div className="preload-font-onest">.</div>
           
-          <header className="w-full bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 sm:px-10 py-6 sticky top-0 z-50 shadow-sm flex flex-row items-center justify-between">
-            <div className="flex flex-col text-left">
-              <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-400 uppercase tracking-tighter leading-none mb-1">
-                Gerador de Capas
-              </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium hidden sm:block">
-                Selecione o tipo de capa desejado para o seu vídeo
-              </p>
-            </div>
+          <header className="w-full bg-white/80 dark:bg-dark-950/80 glass-effect border-b border-slate-200 dark:border-dark-800 sticky top-0 z-50 shadow-sm">
+            <div className="max-w-7xl mx-auto px-6 sm:px-10 py-5 flex flex-row items-center justify-between">
+                <div className="flex flex-col text-left">
+                <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400 uppercase tracking-tighter leading-none mb-1">
+                    Gerador de Capas
+                </h1>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest opacity-80 hidden sm:block">
+                    Produção de Conteúdo Institucional
+                </p>
+                </div>
 
-            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 p-1 rounded-2xl border border-gray-100 dark:border-gray-700">
-                {['light', 'dark', 'system'].map(t => (
-                    <button 
-                    key={t} 
-                    onClick={() => setTheme(t)} 
-                    className={`p-2.5 rounded-xl transition-all ${theme === t ? 'text-indigo-600 bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                    title={t === 'light' ? 'Modo Claro' : t === 'dark' ? 'Modo Escuro' : 'Sistema'}
-                    >
-                    <LucideIcon name={t === 'light' ? 'sun' : t === 'dark' ? 'moon' : 'monitor'} className="w-5 h-5" />
-                    </button>
-                ))}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-dark-900 p-1 rounded-2xl border border-slate-200/50 dark:border-dark-700/50">
+                    {[
+                        { id: 'light', icon: 'sun' },
+                        { id: 'dark', icon: 'moon' },
+                        { id: 'system', icon: 'monitor' }
+                    ].map(t => (
+                        <button 
+                        key={t.id} 
+                        onClick={() => setTheme(t.id)} 
+                        className={`p-2 rounded-xl transition-all duration-300 ${theme === t.id ? 'text-indigo-600 bg-white dark:bg-dark-800 shadow-sm ring-1 ring-slate-200/20' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+                        title={t.id}
+                        >
+                        <LucideIcon name={t.icon} className="w-4 h-4" />
+                        </button>
+                    ))}
+                </div>
             </div>
           </header>
 
           <main className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 p-6 sm:p-10 w-full flex-1">
-            <div className="lg:col-span-5 space-y-6">
+            <div className="lg:col-span-5 space-y-8">
               
-              <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                  <span className="flex items-center justify-center w-7 h-7 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full text-xs">01</span>
+              <section className="bg-white dark:bg-dark-900 p-7 rounded-[2rem] shadow-sm border border-slate-100 dark:border-dark-800 transition-all duration-300 hover:shadow-md">
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-3 mb-6">
+                  <span className="flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded-lg text-[10px] shadow-lg shadow-indigo-500/20">01</span>
                   Nível de Ensino
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <button 
                     onClick={() => { setEducationLevel('graduacao'); setSelectedCoverType(null); }}
-                    className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${educationLevel === 'graduacao' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:border-indigo-200'}`}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 font-bold text-xs tracking-wide ${educationLevel === 'graduacao' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-slate-100 dark:border-dark-800 bg-slate-50 dark:bg-dark-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 text-slate-400 dark:text-slate-500'}`}
                   >
                     GRADUAÇÃO
+                    {educationLevel === 'graduacao' && <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-600 rounded-full border-2 border-white dark:border-dark-900"></div>}
                   </button>
                   <button 
                     onClick={() => { setEducationLevel('pos'); setSelectedCoverType('standard'); }}
-                    className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${educationLevel === 'pos' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:border-indigo-200'}`}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 font-bold text-xs tracking-wide ${educationLevel === 'pos' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-slate-100 dark:border-dark-800 bg-slate-50 dark:bg-dark-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 text-slate-400 dark:text-slate-500'}`}
                   >
                     PÓS-GRADUAÇÃO
+                    {educationLevel === 'pos' && <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-600 rounded-full border-2 border-white dark:border-dark-900"></div>}
                   </button>
                 </div>
-              </div>
+              </section>
 
               {educationLevel === 'graduacao' && (
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                    <span className="flex items-center justify-center w-7 h-7 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full text-xs">02</span>
+                <section className="bg-white dark:bg-dark-900 p-7 rounded-[2rem] shadow-sm border border-slate-100 dark:border-dark-800 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-3 mb-6">
+                    <span className="flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded-lg text-[10px] shadow-lg shadow-indigo-500/20">02</span>
                     Versão da Capa
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => setSelectedCoverType('standard')} className={`p-4 rounded-2xl border-2 transition-all font-bold text-xs ${selectedCoverType === 'standard' ? 'border-indigo-600 bg-indigo-600 text-white shadow-md' : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200'}`}>PADRÃO</button>
-                    <button onClick={() => setSelectedCoverType('libras')} className={`p-4 rounded-2xl border-2 transition-all font-bold text-xs ${selectedCoverType === 'libras' ? 'border-indigo-600 bg-indigo-600 text-white shadow-md' : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200'}`}>LIBRAS</button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button onClick={() => setSelectedCoverType('standard')} className={`p-4 rounded-2xl border-2 transition-all duration-300 font-bold text-[10px] tracking-widest ${selectedCoverType === 'standard' ? 'border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-500/25' : 'border-slate-50 dark:border-dark-800 bg-slate-50 dark:bg-dark-800 text-slate-400 dark:text-slate-500 hover:border-indigo-200'}`}>PADRÃO</button>
+                    <button onClick={() => setSelectedCoverType('libras')} className={`p-4 rounded-2xl border-2 transition-all duration-300 font-bold text-[10px] tracking-widest ${selectedCoverType === 'libras' ? 'border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-500/25' : 'border-slate-50 dark:border-dark-800 bg-slate-50 dark:bg-dark-800 text-slate-400 dark:text-slate-500 hover:border-indigo-200'}`}>LIBRAS</button>
                   </div>
-                </div>
+                </section>
               )}
 
               {selectedCoverType && (
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                    <span className="flex items-center justify-center w-7 h-7 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full text-xs">{educationLevel === 'pos' ? '02' : '03'}</span>
-                    Títulos dos Vídeos
-                  </h3>
-                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                <section className="bg-white dark:bg-dark-900 p-7 rounded-[2rem] shadow-sm border border-slate-100 dark:border-dark-800 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-3">
+                        <span className="flex items-center justify-center w-6 h-6 bg-indigo-500 text-white rounded-lg text-[10px] shadow-lg shadow-indigo-500/20">{educationLevel === 'pos' ? '02' : '03'}</span>
+                        Títulos dos Vídeos
+                    </h3>
+                    <span className="text-[10px] font-bold text-indigo-400 dark:text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded-full">{themes.filter(t => t.trim()).length} pronto(s)</span>
+                  </div>
+                  <div className="space-y-3.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                     {themes.map((t, idx) => (
-                      <input
-                        key={idx}
-                        type="text"
-                        value={t}
-                        onChange={(e) => handleThemeChangeInput(idx, e.target.value)}
-                        placeholder={`Digite o título ${idx + 1}...`}
-                        className="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-transparent focus:border-indigo-400 focus:bg-white dark:focus:bg-gray-900 outline-none transition-all text-sm font-semibold uppercase"
-                      />
+                      <div key={idx} className="relative group">
+                        <input
+                            type="text"
+                            value={t}
+                            onChange={(e) => handleThemeChangeInput(idx, e.target.value)}
+                            placeholder={`Escreva o título ${idx + 1}...`}
+                            className="w-full p-4 pl-5 rounded-2xl bg-slate-50 dark:bg-dark-800 border-2 border-transparent focus:border-indigo-500/30 focus:bg-white dark:focus:bg-dark-950 outline-none transition-all text-sm font-semibold uppercase placeholder:normal-case placeholder:font-medium placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
+                        />
+                        {t && <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>}
+                      </div>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
             </div>
 
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-7 flex flex-col">
               <PreviewAndActions
                 coverType={selectedCoverType}
                 generatedCovers={generatedCovers}
@@ -409,6 +448,10 @@
             </div>
           </main>
 
+          <footer className="w-full py-8 px-6 text-center">
+             <p className="text-[10px] font-bold text-slate-300 dark:text-dark-800 uppercase tracking-[0.2em]">Fluxo de Trabalho Automatizado • 2024</p>
+          </footer>
+
           <canvas ref={hiddenCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} id="hiddenCanvas" />
         </div>
       );
@@ -419,4 +462,3 @@
   </script>
 </body>
 </html>
-
