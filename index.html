@@ -268,7 +268,7 @@
         let area = { x: 288, y: 270, w: 1344, h: 540 };
         if (type === 'libras') area = { x: 192, y: 270, w: 1056, h: 540 };
         
-        let fontSize = 90;
+        let fontSize = isPos ? 70 : 90;
         const fontName = isPos ? 'Onest' : 'Oswald';
         const fontWeight = isPos ? '900' : 'bold';
 
@@ -283,7 +283,7 @@
           lines = getBalancedLines(text, ctx, area.w);
         }
 
-        const lineHeight = fontSize * 1.5;
+        const lineHeight = fontSize * 1.70;
         const totalHeight = lines.length * lineHeight;
         const startY = area.y + (area.h - totalHeight) / 2 + (fontSize * 1.1);
         
